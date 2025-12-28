@@ -1,34 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>URL Shortener with QR</title>
-
-  <link rel="stylesheet" href="style.css">
+  <title>TinyLink - URL Shortener</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h2>URL Shortener with QR</h2>
-  <input id="url" placeholder="Enter long URL" size="50"/>
-  <button onclick="shorten()">Shorten</button>
+
+<header>
+  <h2>TinyLink</h2>
+</header>
+
+<div class="container">
+  <h3>Paste your long URL here</h3>
+  <div class="input-box">
+    <input id="url" placeholder="https://example.com/very/long/url">
+    <button onclick="shorten()">Shorten</button>
+  </div>
 
   <p id="result"></p>
-  <img id="qr" width="200"/>
-  <br>
-  <a id="download" download="qrcode.png">Download QR</a>
+
+  <div class="qr-box">
+    <img id="qr" width="180">
+    <a id="download" download="qrcode.png">Download QR</a>
+  </div>
+
+  <h4>Recent Links</h4>
+  <ul id="recentList"></ul>
+</div>
 
 <script>
 function shorten(){
  fetch("/shorten",{
   method:"POST",
   headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({originalUrl:document.getElementById("url").value})
+  body:JSON.stringify({originalUrl:url.value})
  })
- .then(res=>res.json())
- .then(data=>{
-  document.getElementById("result").innerText = data.shortUrl;
-  document.getElementById("qr").src = data.qrCode;
-  document.getElementById("download").href = data.qrCode;
+ .then(r=>r.json())
+ .then(d=>{
+  result.innerText = d.shortUrl;
+  qr.src = d.qrCode;
+  download.href = d.qrCode;
+  loadRecent();
  });
 }
+
+function loadRecent(){
+ fetch("/recent")
+ .then(r=>r.json())
+ .then(data=>{
+  recentList.innerHTML="";
+  data.forEach(u=>{
+    let li=document.createElement("li");
+    li.innerText=u.shortCode + " → " + u.originalUrl;
+    recentList.appendChild(li);
+  })
+ })
+}
+loadRecent();
 </script>
+
 </body>
 </html>
