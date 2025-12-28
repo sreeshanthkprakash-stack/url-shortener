@@ -1,49 +1,9 @@
-const redisClient = require("../config/redis");
-const Url = require("../models/url");   // 🔥 FIXED case-sensitive path
-const shortid = require("shortid");
-const QRCode = require("qrcode");
-
-exports.createShortUrl = async (req, res) => {
-  try {
-    const { originalUrl } = req.body;
-
-    if (!originalUrl || !originalUrl.startsWith("http")) {
-      return res.status(400).json({ error: "Invalid URL" });
-    }
-
-    const shortCode = shortid.generate();
-
-    // 🔥 Works both locally and in production
-    const shortUrl = `${req.protocol}://${req.get("host")}/${shortCode}`;
-
-    const qrImage = await QRCode.toDataURL(shortUrl);
-
-    const newUrl = new Url({
-      originalUrl,
-      shortCode,
-      qrCode: qrImage
-    });
-
-    await newUrl.save();
-
-    res.json({ shortUrl, qrCode: qrImage });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
-  }
-};
-
 exports.redirectUrl = async (req, res) => {
   try {
     const code = req.params.code;
 
-    const cachedUrl = await redisClient.get(code);
-    if (cachedUrl) return res.redirect(cachedUrl);
-
     const url = await Url.findOne({ shortCode: code });
     if (!url) return res.status(404).send("Link not found");
-
-    await redisClient.set(code, url.originalUrl, { EX: 86400 });
 
     url.clicks++;
     await url.save();
@@ -54,10 +14,3 @@ exports.redirectUrl = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
-
-
-exports.getRecentUrls = async (req, res) => {
-  const urls = await Url.find().sort({ _id: -1 }).limit(5);
-  res.json(urls);
-};
-
