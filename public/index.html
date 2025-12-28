@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>URL Shortener with QR</title>
+</head>
+<body>
+  <h2>URL Shortener with QR</h2>
+  <input id="url" placeholder="Enter long URL" size="50"/>
+  <button onclick="shorten()">Shorten</button>
+
+  <p id="result"></p>
+  <img id="qr" width="200"/>
+  <br>
+  <a id="download" download="qrcode.png">Download QR</a>
+
+<script>
+function shorten(){
+ fetch("http://localhost:5000/shorten",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({originalUrl:document.getElementById("url").value})
+ })
+ .then(res=>res.json())
+ .then(data=>{
+  document.getElementById("result").innerText = data.shortUrl;
+  document.getElementById("qr").src = data.qrCode;
+  document.getElementById("download").href = data.qrCode;
+ });
+}
+</script>
+</body>
+</html>
