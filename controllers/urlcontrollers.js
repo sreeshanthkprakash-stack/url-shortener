@@ -47,3 +47,9 @@ exports.redirectUrl = async (req, res) => {
     res.status(500).send("Server error");
   }
 };
+
+exports.getRecentUrls = async (req, res) => {
+  const urls = await Url.find().sort({ _id: -1 }).limit(5);
+  res.json(urls);
+};
+
