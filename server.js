@@ -1,6 +1,6 @@
 const express = require("express");
 const connectDB = require("./config/db");
-const urlRoutes = require("./routes/urlRoutes"); // 🔥 also fix case
+const urlRoutes = require("./routes/urlroutes"); // 🔥 also fix case
 const cors = require("cors");
 require("dotenv").config();
 
